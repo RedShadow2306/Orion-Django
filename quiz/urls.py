@@ -3,6 +3,10 @@ from . import views
 
 urlpatterns = [
     path('', views.index, name='index'),
+    path('host', views.host_page, name='host'),
+    path('join', views.join_page, name='join'),
+    path('play', views.play_page, name='play'),
+    path('leaderboard', views.leaderboard_page, name='leaderboard'),
     path('api/health/', views.health, name='health'),
     path('api/quizzes/', views.create_quiz, name='create_quiz'),
     path('api/questions/bulk/', views.bulk_questions, name='bulk_questions'),
