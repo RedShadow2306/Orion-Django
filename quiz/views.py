@@ -29,6 +29,18 @@ def generate_code():
 def index(request):
     return render(request, 'index.html')
 
+def host_page(request):
+    return render(request, 'host.html')
+
+def join_page(request):
+    return render(request, 'join.html')
+
+def play_page(request):
+    return render(request, 'play.html')
+
+def leaderboard_page(request):
+    return render(request, 'leaderboard.html')
+
 def health(request):
     return JsonResponse({'message': '🚀 Orion Django API is running!'})
 
