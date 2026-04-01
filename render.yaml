@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: orion-django
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn orion.wsgi:application
+    envVars:
+      - key: MONGO_URI
+        sync: false
+      - key: SECRET_KEY
+        sync: false
