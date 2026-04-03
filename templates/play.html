@@ -41,10 +41,7 @@
             z-index: 1;
         }
         .screen.active { display: block; }
-        .loading-box {
-            text-align: center;
-            padding: 60px 20px;
-        }
+        .loading-box { text-align: center; padding: 60px 20px; }
         .spinner {
             width: 60px; height: 60px;
             border: 4px solid rgba(255,255,255,0.1);
@@ -60,12 +57,7 @@
             align-items: center;
             margin-bottom: 25px;
         }
-        .progress {
-            font-size: 0.85rem;
-            opacity: 0.5;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .progress { font-size: 0.85rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
         .score-display {
             background: rgba(129,140,248,0.15);
             border: 1px solid rgba(129,140,248,0.3);
@@ -88,12 +80,7 @@
             border-radius: 10px;
             transition: width 1s linear, background 0.3s;
         }
-        .timer-text {
-            text-align: center;
-            font-size: 0.85rem;
-            opacity: 0.5;
-            margin-bottom: 20px;
-        }
+        .timer-text { text-align: center; font-size: 0.85rem; opacity: 0.5; margin-bottom: 20px; }
         .question-type-badge {
             display: inline-block;
             padding: 4px 12px;
@@ -107,18 +94,8 @@
         .badge-mcq { background: rgba(99,102,241,0.2); color: #818cf8; }
         .badge-poll { background: rgba(34,197,94,0.2); color: #86efac; }
         .badge-open_ended { background: rgba(251,191,36,0.2); color: #fbbf24; }
-        .question-text {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 30px;
-            line-height: 1.4;
-        }
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
+        .question-text { font-size: 1.5rem; font-weight: 700; margin-bottom: 30px; line-height: 1.4; }
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .option-btn {
             padding: 18px 20px;
             background: rgba(255,255,255,0.06);
@@ -136,20 +113,9 @@
             border-color: #818cf8;
             transform: translateY(-2px);
         }
-        .option-btn.correct {
-            background: rgba(34,197,94,0.2);
-            border-color: #22c55e;
-            color: #86efac;
-        }
-        .option-btn.wrong {
-            background: rgba(239,68,68,0.2);
-            border-color: #ef4444;
-            color: #fca5a5;
-        }
-        .option-btn.disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .option-btn.correct { background: rgba(34,197,94,0.2); border-color: #22c55e; color: #86efac; }
+        .option-btn.wrong { background: rgba(239,68,68,0.2); border-color: #ef4444; color: #fca5a5; }
+        .option-btn.disabled { opacity: 0.5; cursor: not-allowed; }
         .open-answer-area {
             width: 100%;
             padding: 16px 20px;
@@ -191,10 +157,7 @@
             display: none;
             letter-spacing: 1px;
         }
-        .next-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(99,102,241,0.4);
-        }
+        .next-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99,102,241,0.4); }
         .submit-open-btn {
             width: 100%;
             padding: 15px;
@@ -209,10 +172,7 @@
             margin-bottom: 12px;
         }
         .submit-open-btn:hover { transform: translateY(-2px); }
-        .summary-box {
-            text-align: center;
-            padding: 20px;
-        }
+        .summary-box { text-align: center; padding: 20px; }
         .summary-icon { font-size: 5rem; margin-bottom: 15px; }
         .summary-title {
             font-size: 2rem;
@@ -222,13 +182,7 @@
             -webkit-text-fill-color: transparent;
             margin-bottom: 30px;
         }
-        .summary-stats {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-bottom: 35px;
-            flex-wrap: wrap;
-        }
+        .summary-stats { display: flex; gap: 15px; justify-content: center; margin-bottom: 35px; flex-wrap: wrap; }
         .stat-card {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(255,255,255,0.08);
@@ -236,17 +190,8 @@
             padding: 20px 25px;
             min-width: 120px;
         }
-        .stat-num {
-            font-size: 2rem;
-            font-weight: bold;
-            color: #a78bfa;
-        }
-        .stat-label {
-            font-size: 0.75rem;
-            opacity: 0.5;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
+        .stat-num { font-size: 2rem; font-weight: bold; color: #a78bfa; }
+        .stat-label { font-size: 0.75rem; opacity: 0.5; text-transform: uppercase; letter-spacing: 1px; }
         .leaderboard-btn {
             display: inline-block;
             padding: 16px 40px;
@@ -261,10 +206,7 @@
             transition: all 0.3s;
             letter-spacing: 1px;
         }
-        .leaderboard-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px rgba(251,191,36,0.3);
-        }
+        .leaderboard-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(251,191,36,0.3); }
     </style>
 </head>
 <body>
@@ -482,6 +424,7 @@
             answered = true;
             clearInterval(timerInterval);
             const q = questions[currentIndex];
+            const isLast = currentIndex === questions.length - 1;
             disableOptions();
 
             try {
@@ -492,7 +435,8 @@
                         session_id: sessionId,
                         question_id: q.question_id,
                         user_id: userId,
-                        option_id: optionId
+                        option_id: optionId,
+                        is_last: isLast
                     })
                 });
                 const data = await res.json();
@@ -530,6 +474,7 @@
             answered = true;
             clearInterval(timerInterval);
             const q = questions[currentIndex];
+            const isLast = currentIndex === questions.length - 1;
             document.getElementById('submitOpenBtn').style.display = 'none';
 
             try {
@@ -540,7 +485,8 @@
                         session_id: sessionId,
                         question_id: q.question_id,
                         user_id: userId,
-                        open_answer: answer
+                        open_answer: answer,
+                        is_last: isLast
                     })
                 });
                 showFeedback('✅ Answer submitted!', 'poll');
@@ -585,4 +531,4 @@
         loadQuiz();
     </script>
 </body>
-  </html>
+    </html>
