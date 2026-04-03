@@ -302,3 +302,61 @@ def leaderboard(request, join_code):
         return JsonResponse(leaderboard_data, safe=False)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+def download_results(request, join_code):
+    try:
+        session = get_col('sessions').find_one({'join_code': join_code.upper()})
+        if not session:
+            return JsonResponse({'error': 'Session not found'}, status=404)
+
+        quiz = get_col('quizzes').find_one({'_id': ObjectId(session['quiz_id'])})
+        quiz_title = quiz['title'] if quiz else 'Quiz'
+
+        questions = list(get_col('questions').find(
+            {'quiz_id': session['quiz_id']},
+            sort=[('order_num', 1)]
+        ))
+
+        participants = list(get_col('participants').find(
+            {'session_id': str(session['_id'])},
+            sort=[('total_score', -1)]
+        ))
+
+        responses = list(get_col('responses').find(
+            {'session_id': str(session['_id'])}
+        ))
+
+        # Build CSV
+        csv = f"Quiz: {quiz_title}\n"
+        csv += f"Join Code: {join_code}\n"
+        csv += f"Total Participants: {len(participants)}\n\n"
+
+        question_headers = ','.join([f"Q{i+1}: {q['question_text'][:30]}..." for i, q in enumerate(questions)])
+        csv += f"Rank,Player Name,Total Score,{question_headers}\n"
+
+        for rank, p in enumerate(participants, 1):
+            player_responses = [r for r in responses if r['user_id'] == p['user_id']]
+            question_data = []
+            for q in questions:
+                response = next((r for r in player_responses if r['question_id'] == str(q['_id'])), None)
+                if not response:
+                    question_data.append('No Answer')
+                elif q['question_type'] == 'open_ended':
+                    question_data.append(response.get('open_answer', 'No Answer'))
+                else:
+                    opt_text = ''
+                    for opt in q.get('options', []):
+                        if opt['option_id'] == response.get('option_id'):
+                            opt_text = opt['option_text']
+                            break
+                    correct = '✓' if response.get('is_correct') else '✗'
+                    question_data.append(f"{opt_text} ({correct})")
+
+            csv += f"{rank},{p['username']},{p['total_score']},{','.join(question_data)}\n"
+
+        from django.http import HttpResponse
+        response = HttpResponse(csv, content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="orion-results-{join_code}.csv"'
+        return response
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
