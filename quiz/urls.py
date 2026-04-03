@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('api/results/<str:join_code>/', views.download_results, name='download_results'),
     path('', views.index, name='index'),
     path('host', views.host_page, name='host'),
     path('join', views.join_page, name='join'),
