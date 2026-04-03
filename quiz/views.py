@@ -10,18 +10,21 @@ from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime
 
-# MongoDB connection
-client = MongoClient(os.environ.get('MONGO_URI', ''))
-db = client['orion']
+# MongoDB lazy connection
+_client = None
 
-# Collections
-users_col = db['users']
-quizzes_col = db['quizzes']
-questions_col = db['questions']
-options_col = db['options']
-sessions_col = db['sessions']
-participants_col = db['participants']
-responses_col = db['responses']
+def get_db():
+    global _client
+    if _client is None:
+        _client = MongoClient(
+            os.environ.get('MONGO_URI', ''),
+            serverSelectionTimeoutMS=5000,
+            connectTimeoutMS=5000
+        )
+    return _client['orion']
+
+def get_col(name):
+    return get_db()[name]
 
 def generate_code():
     return ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
@@ -55,7 +58,7 @@ def create_quiz(request):
             'host_id': data.get('host_id', 'host'),
             'created_at': datetime.utcnow()
         }
-        result = quizzes_col.insert_one(quiz)
+        result = get_col('quizzes').insert_one(quiz)
         return JsonResponse({
             'quiz_id': str(result.inserted_id),
             'title': quiz['title']
@@ -91,7 +94,7 @@ def bulk_questions(request):
                             'is_correct': opt.get('is_correct', False)
                         })
 
-            questions_col.insert_one(question)
+            get_col('questions').insert_one(question)
 
         return JsonResponse({'success': True})
     except Exception as e:
@@ -110,7 +113,7 @@ def create_session(request):
             'ended_at': None,
             'created_at': datetime.utcnow()
         }
-        result = sessions_col.insert_one(session)
+        result = get_col('sessions').insert_one(session)
         return JsonResponse({
             'session_id': str(result.inserted_id),
             'join_code': session['join_code']
@@ -120,7 +123,7 @@ def create_session(request):
 
 def get_session(request, join_code):
     try:
-        session = sessions_col.find_one({'join_code': join_code.upper()})
+        session = get_col('sessions').find_one({'join_code': join_code.upper()})
         if not session:
             return JsonResponse({'error': 'Session not found'}, status=404)
         return JsonResponse({
@@ -134,10 +137,10 @@ def get_session(request, join_code):
 
 def session_status(request, join_code):
     try:
-        session = sessions_col.find_one({'join_code': join_code.upper()})
+        session = get_col('sessions').find_one({'join_code': join_code.upper()})
         if not session:
             return JsonResponse({'error': 'Session not found'}, status=404)
-        count = participants_col.count_documents({'session_id': str(session['_id'])})
+        count = get_col('participants').count_documents({'session_id': str(session['_id'])})
         return JsonResponse({
             'status': session['status'],
             'participant_count': count
@@ -149,7 +152,7 @@ def session_status(request, join_code):
 @require_http_methods(['POST'])
 def start_session(request, join_code):
     try:
-        sessions_col.update_one(
+        get_col('sessions').update_one(
             {'join_code': join_code.upper()},
             {'$set': {'status': 'active', 'started_at': datetime.utcnow()}}
         )
@@ -159,11 +162,11 @@ def start_session(request, join_code):
 
 def get_questions(request, join_code):
     try:
-        session = sessions_col.find_one({'join_code': join_code.upper()})
+        session = get_col('sessions').find_one({'join_code': join_code.upper()})
         if not session:
             return JsonResponse({'error': 'Session not found'}, status=404)
 
-        questions = list(questions_col.find(
+        questions = list(get_col('questions').find(
             {'quiz_id': session['quiz_id']},
             sort=[('order_num', 1)]
         ))
@@ -198,7 +201,7 @@ def join_session(request):
         username = data['username']
         join_code = data['join_code'].upper()
 
-        session = sessions_col.find_one({'join_code': join_code})
+        session = get_col('sessions').find_one({'join_code': join_code})
         if not session:
             return JsonResponse({'error': 'Quiz code not found!'}, status=404)
 
@@ -208,7 +211,7 @@ def join_session(request):
             'role': 'participant',
             'created_at': datetime.utcnow()
         }
-        user_result = users_col.insert_one(user)
+        user_result = get_col('users').insert_one(user)
 
         participant = {
             'session_id': str(session['_id']),
@@ -217,7 +220,7 @@ def join_session(request):
             'total_score': 0,
             'joined_at': datetime.utcnow()
         }
-        participants_col.insert_one(participant)
+        get_col('participants').insert_one(participant)
 
         return JsonResponse({
             'success': True,
@@ -240,7 +243,7 @@ def submit_response(request):
         option_id = data.get('option_id')
         open_answer = data.get('open_answer')
 
-        question = questions_col.find_one({'_id': ObjectId(question_id)})
+        question = get_col('questions').find_one({'_id': ObjectId(question_id)})
         if not question:
             return JsonResponse({'error': 'Question not found'}, status=404)
 
@@ -264,10 +267,10 @@ def submit_response(request):
             'score_awarded': score_awarded,
             'submitted_at': datetime.utcnow()
         }
-        responses_col.insert_one(response)
+        get_col('responses').insert_one(response)
 
         if score_awarded > 0:
-            participants_col.update_one(
+            get_col('participants').update_one(
                 {'session_id': session_id, 'user_id': user_id},
                 {'$inc': {'total_score': score_awarded}}
             )
@@ -282,11 +285,11 @@ def submit_response(request):
 
 def leaderboard(request, join_code):
     try:
-        session = sessions_col.find_one({'join_code': join_code.upper()})
+        session = get_col('sessions').find_one({'join_code': join_code.upper()})
         if not session:
             return JsonResponse({'error': 'Session not found'}, status=404)
 
-        participants = list(participants_col.find(
+        participants = list(get_col('participants').find(
             {'session_id': str(session['_id'])},
             sort=[('total_score', -1)]
         ))
