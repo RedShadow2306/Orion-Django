@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    path('api/sessions/<str:join_code>/log/', views.competition_log, name='competition_log'),
+    path('api/sessions/<str:join_code>/download-log/', views.download_competition_log, name='download_competition_log'),
     path('api/results/<str:join_code>/', views.download_results, name='download_results'),
     path('', views.index, name='index'),
     path('host', views.host_page, name='host'),
